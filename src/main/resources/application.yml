@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: caixabank-test
+  datasource:
+    url: jdbc:postgresql://localhost:5432/my-database
+    username: user
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
