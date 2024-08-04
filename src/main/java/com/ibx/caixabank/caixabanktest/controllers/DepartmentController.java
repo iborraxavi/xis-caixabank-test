@@ -2,9 +2,11 @@ package com.ibx.caixabank.caixabanktest.controllers;
 
 import com.ibx.caixabank.caixabanktest.entities.Department;
 import com.ibx.caixabank.caixabanktest.repositories.DepartmentRepository;
+import com.ibx.caixabank.caixabanktest.repositories.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,9 +19,11 @@ public class DepartmentController {
 
     private final DepartmentRepository departmentRepository;
 
+    private final EmployeeRepository employeeRepository;
+
     @GetMapping
     public ResponseEntity<List<Department>> getAllDepartments() {
-        return Optional.of(departmentRepository.findAll())
+        return Optional.of(departmentRepository.findAllWithEmployees())
                 .filter(departments -> !departments.isEmpty())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.noContent().build());
@@ -27,7 +31,7 @@ public class DepartmentController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Department> getDepartmentById(@PathVariable("id") long id) {
-        return departmentRepository.findById(id)
+        return departmentRepository.findByIdWithEmployees(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -45,10 +49,19 @@ public class DepartmentController {
     }
 
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<Void> deleteDepartment(@PathVariable("id") long id) {
         return departmentRepository.findById(id)
                 .map(department -> deleteDepartmentById(department.getId()))
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/all")
+    @Transactional
+    public ResponseEntity<Void> deleteAllDepartments() {
+        employeeRepository.deleteAll();
+        departmentRepository.deleteAll();
+        return ResponseEntity.ok().build();
     }
 
     private ResponseEntity<Department> buildCreatedResponseEntity(Department department) {
@@ -63,6 +76,7 @@ public class DepartmentController {
     }
 
     private ResponseEntity<Void> deleteDepartmentById(Long id) {
+        employeeRepository.deleteByDepartmentId(id);
         departmentRepository.deleteById(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }

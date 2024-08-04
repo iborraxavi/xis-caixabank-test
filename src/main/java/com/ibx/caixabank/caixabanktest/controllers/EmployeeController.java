@@ -44,11 +44,29 @@ public class EmployeeController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Employee> modifyEmployee(@PathVariable Long id, @RequestBody Employee requestEmployee) {
+        return employeeRepository.findById(id)
+                .map(existingEmployee -> modifyEmployeeWithDepartmentById(requestEmployee, existingEmployee))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
         return employeeRepository.findById(id)
                 .map(employee -> deleteEmployeeById(employee.getId()))
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/all")
+    public ResponseEntity<Void> deleteAllEmployee() {
+        employeeRepository.deleteAll();
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/salary")
+    public ResponseEntity<List<Employee>> getSalary(@RequestParam(name = "initialSalary") Double initialSalary, @RequestParam(name = "finalSalary") Double finalSalary) {
+        return ResponseEntity.ok(employeeRepository.findBySalaryBetween(initialSalary, finalSalary));
     }
 
     private ResponseEntity<Employee> buildCreatedResponseEntity(Employee employee) {
@@ -60,6 +78,18 @@ public class EmployeeController {
     private ResponseEntity<Employee> createEmployeeWithDepartment(Employee employee, Department department) {
         employee.setDepartment(department);
         return buildCreatedResponseEntity(employeeRepository.save(employee));
+    }
+
+    private ResponseEntity<Employee> modifyEmployeeWithDepartmentById(Employee requestEmployee, Employee existingEmployee) {
+        return departmentRepository.findById(requestEmployee.getDepartment().getId())
+                .map(department -> {
+                    requestEmployee.setId(existingEmployee.getId());
+                    requestEmployee.setDepartment(department);
+                    return department;
+                })
+                .map(department -> employeeRepository.save(requestEmployee))
+                .map(this::buildCreatedResponseEntity)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     private ResponseEntity<Void> deleteEmployeeById(Long id) {
