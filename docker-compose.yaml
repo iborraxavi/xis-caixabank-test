@@ -3,24 +3,31 @@ services:
   app:
     image: 'iborraxavi/xis-caixabank-test:latest'
     container_name: xis-caixabank-test
+    restart: always
     depends_on:
       - postgres
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
+      # - POSTGRES_USER=user
+      # - POSTGRES_PASSWORD=password
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/my-database
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      # - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     ports:
       - "3000:8080"
 
   postgres:
     image: 'postgres'
     container_name: postgres
+    restart: always
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=my-database
     ports:
       - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
+volumes:
+  pg-data:

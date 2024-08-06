@@ -1,12 +1,21 @@
 package com.ibx.caixabank.caixabanktest.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
-
-import static jakarta.persistence.CascadeType.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "EMPLOYEE")
@@ -22,15 +31,16 @@ public class Employee {
     @Column(name = "ID")
     private Long id;
 
+    @NotNull
     @Column(name = "NAME")
     private String name;
 
+    @NotNull
     @Column(name = "SALARY")
     private Double salary;
 
-    @ManyToOne(cascade = {PERSIST, MERGE, REFRESH, DETACH})
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "DEPARTMENT_ID")
-    @NotFound(action = NotFoundAction.IGNORE)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Department department;
 
